@@ -1,0 +1,17 @@
+fastapi>=0.85.0,<0.109.0 # Pinning upper bound for stability example
+uvicorn[standard]>=0.18.3
+sqlalchemy[asyncio]>=2.0.0 # Use SQLAlchemy 2.0+ for native async
+asyncpg>=0.26.0
+pydantic[email]>=1.10.2,<2.0.0 # Pinning Pydantic < 2.0 for compatibility with older patterns if needed, or use >=2.0.0 and adapt schemas
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0 # For pyjwt functionality
+alembic>=1.8.1
+python-dotenv>=0.21.0
+httpx>=0.23.0 # For testing client
+pytest>=7.1.3
+pytest-asyncio>=0.20.1
+psycopg2-binary>=2.9.3 # Required by Alembic for migration generation even if app uses asyncpg
+fastapi-admin
+
+# For Pydantic v2+ settings (if using >=2.0.0)
+# pydantic-settings>=2.0.0

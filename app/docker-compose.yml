@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:15
+    container_name: bookshop-postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bookshop_db
+    volumes:
+      - bookshop_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    container_name: bookshop-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  bookshop_db_data:
+    driver: local
