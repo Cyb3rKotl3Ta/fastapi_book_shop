@@ -12,12 +12,12 @@ services:
       - "5434:5432"
     restart: unless-stopped
 
-  redis:
-    image: redis:6-alpine
-    container_name: bookshop-redis
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
+  # redis:
+  #   image: redis:6-alpine
+  #   container_name: bookshop-redis
+  #   ports:
+  #     - "6379:6379"
+  #   restart: unless-stopped
 
 volumes:
   bookshop_db_data:
