@@ -1,6 +1,7 @@
 from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Security
 
 from app import crud, schemas
 from app.crud import crud_user
@@ -9,36 +10,10 @@ from app.api import deps
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
-async def register_user(
-    *,
-    db: AsyncSession = Depends(deps.get_db),
-    user_in: schemas.UserCreate,
-):
-    """
-    Create new user.
-    """
-    user = await crud_user.user.get_by_email(db, username=user_in.username)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username already exists in the system.",
-        )
-    user = await crud_user.user.get_by_email(db, email=user_in.email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this email already exists in the system.",
-        )
-    user = await crud_user.user.create(db=db, obj_in=user_in)
-    # Add initial balance if desired, e.g. 100.0
-    # await crud.user.update_balance(db, user=user, amount_change=100.0)
-    return user
-
 @router.get("/me", response_model=schemas.UserProfile)
 async def read_users_me(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Get current user profile including favorite books.
@@ -56,7 +31,7 @@ async def update_user_me(
     *,
     db: AsyncSession = Depends(deps.get_db),
     user_in: schemas.UserUpdate,
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Update own user.
@@ -80,7 +55,7 @@ async def update_user_me(
 async def read_my_purchases(
     db: AsyncSession = Depends(deps.get_db),
     pagination: dict = Depends(deps.get_pagination_params),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Retrieve list of completed purchases for the current user.
@@ -95,7 +70,7 @@ async def read_my_purchases(
 async def read_my_favorites(
     db: AsyncSession = Depends(deps.get_db),
     pagination: dict = Depends(deps.get_pagination_params),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Retrieve list of favorite books for the current user.
@@ -109,7 +84,7 @@ async def read_my_favorites(
 @router.get("/me/stats", response_model=schemas.UserStats)
 async def read_my_stats(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Retrieve statistics for the current user (total spent, genre preferences, etc.).
@@ -127,7 +102,7 @@ async def read_my_stats(
 async def read_user_by_id(
     user_id: int,
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Security(deps.get_current_active_user),
 ):
     """
     Get a specific user by id (Admin only).

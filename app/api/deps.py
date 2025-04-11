@@ -1,22 +1,21 @@
 from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt
 
 from app.core import security
-from app.core.config import settings
 from app.db.base import get_db
 from app.db.models.user import User
 from app.crud.crud_user import user as crud_user
 from app.schemas import TokenData
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"/api/v1/auth/login" # Point to your login endpoint
-)
+# security_bearer = HTTPBearer()
+
+security_bearer = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
 
 async def get_current_user(
-    db: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)
+    db: AsyncSession = Depends(get_db), token: str = Depends(security_bearer)
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

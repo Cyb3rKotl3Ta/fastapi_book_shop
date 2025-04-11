@@ -1,6 +1,7 @@
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from app.db.base import engine, Base
 from app.api.routers import auth, books, purchases, users
@@ -39,6 +40,29 @@ app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])
 app.include_router(books.router, prefix="/api/v1/books", tags=["Books"])
 app.include_router(purchases.router, prefix="/api/v1/purchases", tags=["Purchases"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="My Book Shop API",
+        version="1.0.0",            
+        description="API documentation for Book Shop",
+        routes=app.routes,
+    )
+    openapi_schema["openapi"] = "3.0.2"  # or any valid 3.x.y version
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        }
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+    
+app.openapi = custom_openapi
+
 
 @app.get("/", tags=["Root"])
 async def read_root():

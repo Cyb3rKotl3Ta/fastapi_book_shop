@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, schemas
+from app.crud import crud_book
 from app.db.models.user import User
 from app.api import deps
 from app.db.models.book import BookAvailability # Import enum
@@ -23,7 +24,7 @@ async def read_books(
     Retrieve books with optional filtering and pagination.
     Accessible to all users (registered or not).
     """
-    books, total_count = await crud.book.get_multi_filtered(
+    books, total_count = await crud_book.book.get_multi_filtered(
         db,
         skip=pagination["skip"],
         limit=pagination["limit"],
@@ -45,7 +46,7 @@ async def read_book(
     Get book by ID, including comments and ratings.
     Accessible to all users.
     """
-    book = await crud.book.get_book_with_details(db=db, book_id=book_id)
+    book = await crud_book.get_book_with_details(db=db, book_id=book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
     return book
@@ -60,7 +61,7 @@ async def mark_book_as_favorite(
     """
     Mark a book as favorite for the current user.
     """
-    book = await crud.book.get(db=db, id=book_id)
+    book = await crud_book.get(db=db, id=book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 

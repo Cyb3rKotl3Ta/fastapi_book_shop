@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '345496061a53'
+revision = 'd0841f3d03b1'
 down_revision = None
 branch_labels = None
 depends_on = None

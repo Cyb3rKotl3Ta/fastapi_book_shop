@@ -33,6 +33,11 @@ class UserCreate(UserBase):
     is_superuser: bool = False
     is_book_manager: bool = False
 
+class UserOut(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 # --- Schemas for Reading (API Responses) ---
 class User(UserBase):
