@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud, schemas
+from app.crud import crud_user
 from app.db.models.user import User
 from app.api import deps
 
@@ -17,19 +18,19 @@ async def register_user(
     """
     Create new user.
     """
-    user = await crud.user.get_by_username(db, username=user_in.username)
+    user = await crud_user.user.get_by_email(db, username=user_in.username)
     if user:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    user = await crud.user.get_by_email(db, email=user_in.email)
+    user = await crud_user.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="The user with this email already exists in the system.",
         )
-    user = await crud.user.create(db=db, obj_in=user_in)
+    user = await crud_user.user.create(db=db, obj_in=user_in)
     # Add initial balance if desired, e.g. 100.0
     # await crud.user.update_balance(db, user=user, amount_change=100.0)
     return user
@@ -44,7 +45,7 @@ async def read_users_me(
     Purchased books are available via the /me/purchases endpoint.
     """
     # Fetch user profile data including favorites
-    user_profile = await crud.user.get_user_profile(db, user_id=current_user.id)
+    user_profile = await crud_user.user.get_user_profile(db, user_id=current_user.id)
     if not user_profile:
          raise HTTPException(status_code=404, detail="User not found") # Should not happen if token is valid
 
@@ -62,17 +63,17 @@ async def update_user_me(
     """
     # Check for username collision if username is being changed
     if user_in.username and user_in.username != current_user.username:
-        existing_user = await crud.user.get_by_username(db, username=user_in.username)
+        existing_user = await crud_user.user.get_by_username(db, username=user_in.username)
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already taken.")
 
     # Check for email collision if email is being changed
     if user_in.email and user_in.email != current_user.email:
-        existing_user = await crud.user.get_by_email(db, email=user_in.email)
+        existing_user = await crud_user.user.get_by_email(db, email=user_in.email)
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered.")
 
-    user = await crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    user = await crud_user.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
 @router.get("/me/purchases", response_model=List[schemas.Purchase])
@@ -84,7 +85,7 @@ async def read_my_purchases(
     """
     Retrieve list of completed purchases for the current user.
     """
-    purchases = await crud.user.get_user_purchases(
+    purchases = await crud_user.user.get_user_purchases(
         db, user_id=current_user.id, skip=pagination["skip"], limit=pagination["limit"]
     )
     return purchases
@@ -99,7 +100,7 @@ async def read_my_favorites(
     """
     Retrieve list of favorite books for the current user.
     """
-    favorites = await crud.book.get_user_favorites(
+    favorites = await crud_user.book.get_user_favorites(
         db, user_id=current_user.id, skip=pagination["skip"], limit=pagination["limit"]
         )
     return favorites
@@ -113,7 +114,7 @@ async def read_my_stats(
     """
     Retrieve statistics for the current user (total spent, genre preferences, etc.).
     """
-    stats = await crud.user.get_user_stats(db, user_id=current_user.id)
+    stats = await crud_user.user.get_user_stats(db, user_id=current_user.id)
     return stats
 
 
@@ -131,7 +132,7 @@ async def read_user_by_id(
     """
     Get a specific user by id (Admin only).
     """
-    user = await crud.user.get(db, id=user_id)
+    user = await crud_user.user.get(db, id=user_id)
     if not user:
         raise HTTPException(
             status_code=404,
